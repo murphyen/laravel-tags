@@ -37,6 +37,11 @@ class Tag extends Model implements Sortable
         return $query->where('type', $type)->ordered();
     }
 
+    public function scopeWithJob(Builder $query, int $job): Builder
+    {
+        return $query->where('job_id', $job)->ordered();
+    }
+
     public function scopeContaining(Builder $query, string $name, $locale = null): Builder
     {
         $locale = $locale ?? static::getLocale();
@@ -57,9 +62,9 @@ class Tag extends Model implements Sortable
         return is_string($values) ? $tags->first() : $tags;
     }
 
-    public static function getWithType(string $type): DbCollection
+    public static function getWithType(int $job, string $type): DbCollection
     {
-        return static::withType($type)->get();
+        return static::withJob($job)->withType($type)->get();
     }
 
     public static function findFromString(int $job, string $name, string $type = null, string $locale = null)
