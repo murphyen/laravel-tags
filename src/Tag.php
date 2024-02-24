@@ -45,8 +45,8 @@ class Tag extends Model implements Sortable
     }
 
     public static function findOrCreate(int $job, string | array | ArrayAccess $values, string | null $type = null): Collection | Tag | static {
-        dd('here', $job);
-        $tags = collect($values)->map(function ($value) use ($type) {
+
+        $tags = collect($values)->map(function ($value) use ($type, $job) {
             if ($value instanceof self) {
                 return $value;
             }
