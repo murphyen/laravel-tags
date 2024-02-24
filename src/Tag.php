@@ -64,7 +64,7 @@ class Tag extends Model implements Sortable
 
     public static function getWithType(int $job, string $type): DbCollection
     {
-        return static::withJob($job)->withType($type)->get();
+        return static::withType($type)->get();
     }
 
     public static function findFromString(int $job, string $name, string $type = null, string $locale = null)
@@ -81,11 +81,12 @@ class Tag extends Model implements Sortable
             ->first();
     }
 
-    public static function findFromStringOfAnyType(string $name, string $locale = null)
+    public static function findFromStringOfAnyType(int $job, string $name, string $locale = null)
     {
         $locale = $locale ?? static::getLocale();
 
         return static::query()
+            ->where('job_id', $job)
             ->where("name->{$locale}", $name)
             ->orWhere("slug->{$locale}", $name)
             ->get();
