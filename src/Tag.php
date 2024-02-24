@@ -41,20 +41,16 @@ class Tag extends Model implements Sortable
     {
         $locale = $locale ?? static::getLocale();
 
-        return $query->whereRaw('lower(' . $this->getQuery()->getGrammar()->wrap('name->' . $locale) . ') like ?', ['%' . mb_strtolower($name) . '%']);
+        return $query->whereRaw('lower(' . $this->getQuery()->getGrammar()->wrap('name->') . ') like ?', ['%' . mb_strtolower($name) . '%']);
     }
 
-    public static function findOrCreate(
-        string | array | ArrayAccess $values,
-        string | null $type = null,
-        string | null $locale = null,
-    ): Collection | Tag | static {
-        $tags = collect($values)->map(function ($value) use ($type, $locale) {
+    public static function findOrCreate(int $job, string | array | ArrayAccess $values, string | null $type = null): Collection | Tag | static {
+        $tags = collect($values)->map(function ($value) use ($type) {
             if ($value instanceof self) {
                 return $value;
             }
 
-            return static::findOrCreateFromString($value, $type, $locale);
+            return static::findOrCreateFromString($job, $value, $type);
         });
 
         return is_string($values) ? $tags->first() : $tags;
@@ -65,11 +61,12 @@ class Tag extends Model implements Sortable
         return static::withType($type)->get();
     }
 
-    public static function findFromString(string $name, string $type = null, string $locale = null)
+    public static function findFromString(int $job, string $name, string $type = null, string $locale = null)
     {
         $locale = $locale ?? static::getLocale();
 
         return static::query()
+            ->where('job_id', $job)
             ->where('type', $type)
             ->where(function ($query) use ($name, $locale) {
                 $query->where("name->{$locale}", $name)
@@ -88,14 +85,15 @@ class Tag extends Model implements Sortable
             ->get();
     }
 
-    public static function findOrCreateFromString(string $name, string $type = null, string $locale = null)
+    public static function findOrCreateFromString(int $job, string $name, string $type = null, string $locale = null)
     {
         $locale = $locale ?? static::getLocale();
 
-        $tag = static::findFromString($name, $type, $locale);
+        $tag = static::findFromString($job, $name, $type, $locale);
 
         if (! $tag) {
             $tag = static::create([
+                'job_id' => $job,
                 'name' => [$locale => $name],
                 'type' => $type,
             ]);
