@@ -214,7 +214,7 @@ trait HasTags
     public function syncTagsWithType(int $job, array | ArrayAccess $tags, string | null $type = null): static
     {
         $className = static::getTagClassName();
-        dd($job);
+
         $tags = collect($className::findOrCreate($job, $tags, $type));
 
         $this->syncTagIds($tags->pluck('id')->toArray(), $type);
